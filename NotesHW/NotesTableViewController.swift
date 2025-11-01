@@ -20,13 +20,19 @@ class NotesTableViewController: UITableViewController {
         configureNavigationBar()
         
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "\(UITableViewCell.self)")
+        notes = notesManger.loadFromFile()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        notes = notesManger.load()
         tableView.reloadData()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        notesManger.saveToFile(notes)
     }
     
     private func configureNavigationBar() {
@@ -38,12 +44,20 @@ class NotesTableViewController: UITableViewController {
     }
     
     @objc private func createNewNote() {
+        
+        let newNote = Note()
+        notes.append(newNote)
 
-        let noteViewController = NoteViewController()
+        let noteViewController = NoteViewController(note: newNote)
         
         noteViewController.completion = { [weak self] note in
             
-            self?.notesManger.save(note: note)
+            if let notesCount = self?.notes.count {
+                
+                let lastNoteIndex = notesCount - 1
+                
+                self?.notes[lastNoteIndex] = note
+            }
         }
         
         navigationController?.pushViewController(noteViewController, animated: true)
@@ -84,7 +98,7 @@ extension NotesTableViewController {
         
         noteViewController.completion = { [weak self] note in
             
-            self?.notesManger.update(note, at: indexPath.row)
+            self?.notes[indexPath.row] = note
         }
         
         navigationController?.pushViewController(noteViewController, animated: true)
@@ -97,7 +111,6 @@ extension NotesTableViewController {
         guard editingStyle == .delete else { return }
         
         notes.remove(at: indexPath.row)
-        notesManger.delete(at: indexPath.row)
         tableView.deleteRows(at: [indexPath], with: .automatic)
     }
 }

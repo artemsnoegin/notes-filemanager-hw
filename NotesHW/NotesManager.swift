@@ -10,6 +10,11 @@ import Foundation
 class NotesManager {
     
     private var notes = [Note]()
+    private var fileURL: URL {
+        
+        let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        return documentsURL.appendingPathComponent("note.txt")
+    }
     
     private var mock = [
         Note(
@@ -27,23 +32,66 @@ class NotesManager {
     
     func loadMock() -> [Note] { mock }
     
-    func load() -> [Note] {
+    func loadFromFile() -> [Note] {
         
-        notes
+        if let data = FileManager.default.contents(atPath: fileURL.path()) {
+            
+            encode(data) { result in
+                
+                switch result {
+                    
+                case .success(let notes):
+                    self.notes = notes
+                    
+                case .failure(let error):
+                    print(error.localizedDescription)
+                }
+            }
+        }
+        
+        return notes
     }
     
-    func save(note: Note) {
+    func saveToFile(_ notes: [Note]) {
         
-        notes.append(note)
+        decode(notes) { result in
+            
+            switch result {
+                
+            case .success(let data):
+                
+                do {
+                    try data.write(to: fileURL)
+                }
+                catch {
+                    print(error.localizedDescription)
+                }
+                
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
     }
     
-    func update(_ note: Note, at index: Int) {
+    private func decode(_ notes: [Note], completion: (Result<Data, Error>) -> Void) {
         
-        notes[index] = note
+        do {
+            let data = try JSONEncoder().encode(notes)
+            completion(.success(data))
+        }
+        catch {
+            completion(.failure(error))
+        }
     }
     
-    func delete(at index: Int) {
+    private func encode(_ data: Data, completion: (Result<[Note], Error>) -> Void) {
         
-        notes.remove(at: index)
+        do {
+            let note = try JSONDecoder().decode([Note].self, from: data)
+            completion(.success(note))
+        }
+        catch {
+            completion(.failure(error))
+        }
     }
 }
