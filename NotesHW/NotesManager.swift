@@ -26,4 +26,24 @@ class NotesManager {
             date: Date(timeInterval: 60 * (60 * 24), since: .now))]
     
     func loadMock() -> [Note] { mock }
+    
+    func load() -> [Note] {
+        
+        notes
+    }
+    
+    func save(note: Note) {
+        
+        notes.append(note)
+    }
+    
+    func update(_ note: Note, at index: Int) {
+        
+        notes[index] = note
+    }
+    
+    func delete(at index: Int) {
+        
+        notes.remove(at: index)
+    }
 }

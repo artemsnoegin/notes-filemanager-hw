@@ -24,7 +24,7 @@ class NoteViewController: UIViewController {
     private let titleTextView = UITextView()
     private let bodyTextView = UITextView()
     
-    init(note: Note) {
+    init(note: Note = Note()) {
         
         self.note = note
         super.init(nibName: nil, bundle: nil)
@@ -85,6 +85,7 @@ class NoteViewController: UIViewController {
         view.backgroundColor = .systemBackground
         
         navigationItem.largeTitleDisplayMode = .never
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .save, target: self, action: #selector (saveTapped))
         
         dateLabel.text = note.date.formatted()
         dateLabel.textAlignment = .center
@@ -115,6 +116,14 @@ class NoteViewController: UIViewController {
             stack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             stack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
         ])
+    }
+    
+    @objc private func saveTapped() {
+        
+        titleTextView.resignFirstResponder()
+        bodyTextView.resignFirstResponder()
+        
+        completion?(note)
     }
     
     private func addTapGesture() {
@@ -178,73 +187,49 @@ class NoteViewController: UIViewController {
 
 extension NoteViewController: UITextViewDelegate {
     
-    func textViewDidChange(_ textView: UITextView) {
-        
-        if textView == titleTextView {
-            
-            if textView.hasText {
-                
-                note.title = titleTextView.text
-            }
-            else {
-                
-                note.title = placeholder
-            }
-        }
-        
-        if textView == bodyTextView {
-            
-            note.body = textView.text
-            
-        }
-        
-        note.date = .now
-        
-        completion?(note)
-    }
-    
     func textViewShouldBeginEditing(_ textView: UITextView) -> Bool {
         
-        if textView == titleTextView {
+        guard textView == titleTextView else { return true }
             
-            if placeholderIsOn {
-                
-                textView.text = ""
-                textView.textColor = .label
-                placeholderIsOn = false
-                
-                return true
-            }
+        if placeholderIsOn {
+            
+            textView.text = ""
+            textView.textColor = .label
+            placeholderIsOn = false
         }
         
-        if textView == bodyTextView {
+        
+        return true
+    }
+    
+    func textViewShouldEndEditing(_ textView: UITextView) -> Bool {
+        
+        guard textView == titleTextView else { return true }
+        
+        if textView.text.isEmpty {
             
-            if titleTextView.text.isEmpty && textView.text.isEmpty {
-                
-                titleTextView.becomeFirstResponder()
-                
-                return false
-            }
+            textView.text = placeholder
+            note.title = placeholder
+            textView.textColor = .secondaryLabel
+            placeholderIsOn = true
         }
         
         return true
     }
     
     func textViewDidEndEditing(_ textView: UITextView) {
-        
-        guard textView == titleTextView else { return }
-        
-        if textView.text.isEmpty {
+
+        if textView == titleTextView {
             
-            textView.text = placeholder
-            textView.textColor = .secondaryLabel
-            placeholderIsOn = true
+            note.title = textView.text
         }
-        else {
+        
+        if textView == bodyTextView {
             
-            textView.textColor = .label
-            placeholderIsOn = false
+            note.body = textView.text
         }
+        
+        note.date = .now
     }
     
     func textView(_ textView: UITextView,

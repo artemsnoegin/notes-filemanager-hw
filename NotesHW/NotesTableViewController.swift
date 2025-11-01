@@ -20,7 +20,13 @@ class NotesTableViewController: UITableViewController {
         configureNavigationBar()
         
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "\(UITableViewCell.self)")
-        notes = notesManger.loadMock()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        notes = notesManger.load()
+        tableView.reloadData()
     }
     
     private func configureNavigationBar() {
@@ -32,24 +38,15 @@ class NotesTableViewController: UITableViewController {
     }
     
     @objc private func createNewNote() {
-        
-        let newNote = Note()
-        notes.append(newNote)
 
-        let newNoteVC = NoteViewController(note: newNote)
+        let noteViewController = NoteViewController()
         
-        newNoteVC.completion = { [weak self] note in
+        noteViewController.completion = { [weak self] note in
             
-            if let notesCount = self?.notes.count {
-                
-                let index = notesCount - 1
-                
-                self?.notes[index] = note
-                self?.tableView.reloadData()
-            }
+            self?.notesManger.save(note: note)
         }
         
-        navigationController?.pushViewController(newNoteVC, animated: true)
+        navigationController?.pushViewController(noteViewController, animated: true)
     }
 }
 
@@ -84,10 +81,10 @@ extension NotesTableViewController {
         let selectedNote = notes[indexPath.row]
         
         let noteViewController = NoteViewController(note: selectedNote)
+        
         noteViewController.completion = { [weak self] note in
             
-            self?.notes[indexPath.row] = note
-            self?.tableView.reloadData()
+            self?.notesManger.update(note, at: indexPath.row)
         }
         
         navigationController?.pushViewController(noteViewController, animated: true)
@@ -100,6 +97,7 @@ extension NotesTableViewController {
         guard editingStyle == .delete else { return }
         
         notes.remove(at: indexPath.row)
+        notesManger.delete(at: indexPath.row)
         tableView.deleteRows(at: [indexPath], with: .automatic)
     }
 }
