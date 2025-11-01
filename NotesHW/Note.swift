@@ -13,4 +13,10 @@ struct Note {
     var body: String
 
     var date: Date
+    
+    init(title: String = "", body: String = "", date: Date = .now) {
+        self.title = title
+        self.body = body
+        self.date = date
+    }
 }

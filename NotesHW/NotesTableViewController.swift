@@ -9,8 +9,6 @@ import UIKit
 
 class NotesTableViewController: UITableViewController {
     
-    // TODO: add custom cell
-    
     private var notes = [Note]()
     
     private let notesManger = NotesManager()
@@ -34,19 +32,27 @@ class NotesTableViewController: UITableViewController {
     }
     
     @objc private func createNewNote() {
+        
+        let newNote = Note()
+        notes.append(newNote)
 
-        let newNoteVC = NoteViewController()
+        let newNoteVC = NoteViewController(note: newNote)
+        
         newNoteVC.completion = { [weak self] note in
             
-            self?.notes.append(note)
-            self?.tableView.reloadData()
+            if let notesCount = self?.notes.count {
+                
+                let index = notesCount - 1
+                
+                self?.notes[index] = note
+                self?.tableView.reloadData()
+            }
         }
         
         navigationController?.pushViewController(newNoteVC, animated: true)
     }
 }
 
-// MARK: TableViewDelegate & TableViewDataSours methods
 extension NotesTableViewController {
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -93,7 +99,6 @@ extension NotesTableViewController {
         
         guard editingStyle == .delete else { return }
         
-        // TODO: alert or trash
         notes.remove(at: indexPath.row)
         tableView.deleteRows(at: [indexPath], with: .automatic)
     }
