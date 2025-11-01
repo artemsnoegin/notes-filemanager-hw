@@ -27,6 +27,7 @@ class NoteViewController: UIViewController {
     init(note: Note = Note()) {
         
         self.note = note
+        
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -85,7 +86,8 @@ class NoteViewController: UIViewController {
         view.backgroundColor = .systemBackground
         
         navigationItem.largeTitleDisplayMode = .never
-        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .save, target: self, action: #selector (saveTapped))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .save, target: self, action: #selector(saveTapped))
+        navigationItem.rightBarButtonItem?.isHidden = true
         
         dateLabel.text = note.date.formatted()
         dateLabel.textAlignment = .center
@@ -123,6 +125,7 @@ class NoteViewController: UIViewController {
         titleTextView.resignFirstResponder()
         bodyTextView.resignFirstResponder()
         
+        navigationItem.rightBarButtonItem?.isHidden = true
         completion?(note)
     }
     
@@ -134,9 +137,8 @@ class NoteViewController: UIViewController {
     
     @objc private func didTap() {
         
-        guard !titleTextView.isFindInteractionEnabled && !bodyTextView.isFirstResponder else { return }
+        guard !titleTextView.isFirstResponder && !bodyTextView.isFirstResponder else { return }
             
-        
         if bodyTextView.text.isEmpty {
             
             titleTextView.becomeFirstResponder()
@@ -198,38 +200,40 @@ extension NoteViewController: UITextViewDelegate {
             placeholderIsOn = false
         }
         
-        
         return true
     }
     
     func textViewShouldEndEditing(_ textView: UITextView) -> Bool {
         
-        guard textView == titleTextView else { return true }
-        
-        if textView.text.isEmpty {
+        if textView == titleTextView {
             
-            textView.text = placeholder
-            note.title = placeholder
-            textView.textColor = .secondaryLabel
-            placeholderIsOn = true
+            if textView.text.isEmpty {
+                
+                textView.text = placeholder
+                note.title = ""
+                textView.textColor = .secondaryLabel
+                placeholderIsOn = true
+            }
         }
         
         return true
     }
     
-    func textViewDidEndEditing(_ textView: UITextView) {
-
-        if textView == titleTextView {
+    func textViewDidChange(_ textView: UITextView) {
+        
+        guard !placeholderIsOn && bodyTextView.hasText else {
             
-            note.title = textView.text
+            navigationItem.rightBarButtonItem?.isHidden = true
+            return
         }
         
-        if textView == bodyTextView {
-            
-            note.body = textView.text
-        }
+        navigationItem.rightBarButtonItem?.isHidden = false
         
+        note.title = titleTextView.text
+        note.body = bodyTextView.text
         note.date = .now
+        
+        completion?(note)
     }
     
     func textView(_ textView: UITextView,

@@ -26,6 +26,14 @@ class NotesTableViewController: UITableViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
+        if let lastNote = notes.last {
+            
+            if lastNote.title.isEmpty && lastNote.body.isEmpty {
+                
+                notes.remove(at: notes.count - 1)
+            }
+        }
+        
         tableView.reloadData()
     }
     
