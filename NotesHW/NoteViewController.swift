@@ -15,14 +15,14 @@ class NoteViewController: UIViewController {
     
     private let dateLabel = UILabel()
     
+    private let titleTextView = UITextView()
+    private let bodyTextView = UITextView()
+    
     private let placeholder = ". . ."
     private var placeholderIsOn = false
     
     private let scrollView = UIScrollView()
     private let contentView = UIView()
-    
-    private let titleTextView = UITextView()
-    private let bodyTextView = UITextView()
     
     init(note: Note = Note()) {
         
@@ -52,6 +52,17 @@ class NoteViewController: UIViewController {
             
             titleTextView.becomeFirstResponder()
         }
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        if note.title.isEmpty {
+            
+            note.title = placeholder
+        }
+        
+        completion?(note)
     }
     
     private func setupScrollView() {
@@ -126,7 +137,6 @@ class NoteViewController: UIViewController {
         bodyTextView.resignFirstResponder()
         
         navigationItem.rightBarButtonItem?.isHidden = true
-        completion?(note)
     }
     
     private func addTapGesture() {
@@ -216,6 +226,8 @@ extension NoteViewController: UITextViewDelegate {
             }
         }
         
+        dateLabel.text = note.date.formatted()
+        
         return true
     }
     
@@ -233,7 +245,6 @@ extension NoteViewController: UITextViewDelegate {
         note.body = bodyTextView.text
         note.date = .now
         
-        completion?(note)
     }
     
     func textView(_ textView: UITextView,

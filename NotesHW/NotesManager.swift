@@ -10,27 +10,21 @@ import Foundation
 class NotesManager {
     
     private var notes = [Note]()
+    
     private var fileURL: URL {
         
         let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         return documentsURL.appendingPathComponent("note.txt")
     }
     
-    private var mock = [
+    private var greeting = [
         Note(
-            title: "Hello World!",
-            body: "Hello World!",
+            title: "Hello!",
+            body: "Hello!",
             date: Date(timeInterval: 0, since: .now)),
-        Note(
-            title: "Hello User!",
-            body: "Hello User!",
-            date: Date(timeInterval: 60 * 60, since: .now)),
-        Note(
-            title: "Hello Developer!",
-            body: "Hello Developer!",
-            date: Date(timeInterval: 60 * (60 * 24), since: .now))]
+        ]
     
-    func loadMock() -> [Note] { mock }
+    func loadGreeting() -> [Note] { greeting }
     
     func loadFromFile() -> [Note] {
         

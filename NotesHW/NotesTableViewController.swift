@@ -12,6 +12,8 @@ class NotesTableViewController: UITableViewController {
     private var notes = [Note]()
     
     private let notesManger = NotesManager()
+    
+    private var didShowGreeting: Bool { UserDefaults.standard.bool(forKey: "didShowGreeting") }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -20,25 +22,26 @@ class NotesTableViewController: UITableViewController {
         configureNavigationBar()
         
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "\(UITableViewCell.self)")
-        notes = notesManger.loadFromFile()
+        
+        if didShowGreeting {
+            
+            notes = notesManger.loadFromFile()
+        } else {
+            
+            notes = notesManger.loadGreeting()
+            UserDefaults.standard.set(true, forKey: "didShowGreeting")
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
-        if let lastNote = notes.last {
-            
-            if lastNote.title.isEmpty && lastNote.body.isEmpty {
-                
-                notes.remove(at: notes.count - 1)
-            }
-        }
         
         tableView.reloadData()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        
         
         notesManger.saveToFile(notes)
     }
@@ -52,26 +55,19 @@ class NotesTableViewController: UITableViewController {
     }
     
     @objc private func createNewNote() {
-        
-        let newNote = Note()
-        notes.append(newNote)
 
-        let noteViewController = NoteViewController(note: newNote)
+        let noteViewController = NoteViewController()
         
         noteViewController.completion = { [weak self] note in
             
-            if let notesCount = self?.notes.count {
-                
-                let lastNoteIndex = notesCount - 1
-                
-                self?.notes[lastNoteIndex] = note
-            }
+            self?.notes.append(note)
         }
         
         navigationController?.pushViewController(noteViewController, animated: true)
     }
 }
 
+// MARK: TableView configuration
 extension NotesTableViewController {
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
