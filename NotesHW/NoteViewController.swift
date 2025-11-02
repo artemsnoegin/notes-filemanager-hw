@@ -221,7 +221,7 @@ extension NoteViewController: UITextViewDelegate {
     
     func textViewDidChange(_ textView: UITextView) {
         
-        guard !placeholderIsOn && bodyTextView.hasText else {
+        guard !placeholderIsOn || bodyTextView.hasText else {
             
             navigationItem.rightBarButtonItem?.isHidden = true
             return
